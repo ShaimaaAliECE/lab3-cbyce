@@ -15,14 +15,8 @@ app.post('/admin', (req, res) => {
         let conn = newConnection();
         conn.connect();
 
-        //let arr = ["9:00","10:00","11:00","12:00","13:00","14:00", "15:00", "16:00", "17:00", "18:00"];
-
-        let content = '<div>'
-                        +'<div>Doodle App - Admin Portal</div>'
-                            +'<table style="min-width: 100vw; padding: 5px 15px">'
-                                +'<thead>'
-                                    +'<tr>'
-                                        +'<th>Name</th>';
+        let content = '<div><div>Doodle App - Admin Portal</div>'
+                            +'<table style="min-width: 100vw; padding: 5px 15px">';                                        
 
         conn.query( `select * from Availability order by Name, case Name when "Admin" then '1' else '2' end`
                 , (err,rows,fields) => {
@@ -32,24 +26,27 @@ app.post('/admin', (req, res) => {
                         let adminTimes = JSON.parse(rows[0].AvailTimes);
                         rows.shift();
 
-                        console.log(adminTimes[0]);
-
-                        content +=   '<th><input type="time" id="time0" name="time0" min="00:00" max="23:59" value="' + adminTimes[0] + '" required></th>'
-                                    +'<th><input type="time" id="time1" name="time1" min="00:00" max="23:59" value="' + adminTimes[1] + '" required></th>'
-                                    +'<th><input type="time" id="time2" name="time2" min="00:00" max="23:59" value="' + adminTimes[2] + '" required></th>'
-                                    +'<th><input type="time" id="time3" name="time3" min="00:00" max="23:59" value="' + adminTimes[3] + '" required></th>'
-                                    +'<th><input type="time" id="time4" name="time4" min="00:00" max="23:59" value="' + adminTimes[4] + '" required></th>'
-                                    +'<th><input type="time" id="time5" name="time5" min="00:00" max="23:59" value="' + adminTimes[5] + '" required></th>'
-                                    +'<th><input type="time" id="time6" name="time6" min="00:00" max="23:59" value="' + adminTimes[6] + '" required></th>'
-                                    +'<th><input type="time" id="time7" name="time7" min="00:00" max="23:59" value="' + adminTimes[7] + '" required></th>'
-                                    +'<th><input type="time" id="time8" name="time8" min="00:00" max="23:59" value="' + adminTimes[8] + '" required></th>'
-                                    +'<th><input type="time" id="time9" name="time9" min="00:00" max="23:59" value="' + adminTimes[9] + '" required></th>'
-                                +'</tr>'
-                                +'<tr>'
-                                    +'<th colspan="11"><button type="button" id="save-times-btn">Save</button></th>'
-                                +'</tr>'
-                            +'</thead>'
-                            +'<tbody>';
+                        content +='<table style="min-width: 100vw; padding: 5px 15px">'
+                                    +'<form action="/admin/changes" method="post" style="display:table-header-group; vertical-align: middle; border-color: inherit">'
+                                        +'<tr>'
+                                            +'<th>Name</th>'
+                                            +'<th><input type="time" id="t0" name="t0" min="00:00" max="23:59" value="' + adminTimes[0] + '" required></th>'
+                                            +'<th><input type="time" id="t1" name="t1" min="00:00" max="23:59" value="' + adminTimes[1] + '" required></th>'
+                                            +'<th><input type="time" id="t2" name="t2" min="00:00" max="23:59" value="' + adminTimes[2] + '" required></th>'
+                                            +'<th><input type="time" id="t3" name="t3" min="00:00" max="23:59" value="' + adminTimes[3] + '" required></th>'
+                                            +'<th><input type="time" id="t4" name="t4" min="00:00" max="23:59" value="' + adminTimes[4] + '" required></th>'
+                                            +'<th><input type="time" id="t5" name="t5" min="00:00" max="23:59" value="' + adminTimes[5] + '" required></th>'
+                                            +'<th><input type="time" id="t6" name="t6" min="00:00" max="23:59" value="' + adminTimes[6] + '" required></th>'
+                                            +'<th><input type="time" id="t7" name="t7" min="00:00" max="23:59" value="' + adminTimes[7] + '" required></th>'
+                                            +'<th><input type="time" id="t8" name="t8" min="00:00" max="23:59" value="' + adminTimes[8] + '" required></th>'
+                                            +'<th><input type="time" id="t9" name="t9" min="00:00" max="23:59" value="' + adminTimes[9] + '" required></th>'
+                                        +'</tr>'
+                                        +'<tr>'
+                                            +'<th></th>'
+                                            +'<th colspan="10"><button type="submit" id="save-times-btn">Save Time Changes</button></th>'
+                                        +'</tr>'
+                                    +'</form>'
+                                    +'<tbody>';
 
 
                         for(r of rows) {
@@ -79,6 +76,40 @@ app.post('/admin', (req, res) => {
         res.redirect("/");
     }
 });
+
+app.post('/admin/changes', (req, res) => {
+    //let conn = newConnection();
+    //conn.connect();
+
+    let arr = [];
+    let dupValErr = false //Duplicate value trying to be set error
+    //let clock;
+    for (var i = 0; i < 10; i++) {
+        //clock = req.body[`${"t" + i}`].split(":");
+
+        if(arr.includes(req.body[`${"t" + i}`])) {
+            dupValErr = true;
+            i = 10; //Breaks loop once error is found
+        } 
+
+        arr.push(req.body[`${"t" + i}`]);
+
+        //arr.push( parseInt( (clock[0] * 60) + clock[1] ) );
+    }
+
+    arr.sort();
+
+    /* conn.query( `update Availability set LastUpdate = CURRENT_TIME(), AvailTimes = '` + dupValErr + `')`//, true, false, true)`
+            , (err,rows,fields) => {
+                if (err)
+                    console.log(err);
+                else
+                    console.log('One row inserted');
+            }); */
+    console.log(arr[9]);
+    console.log(JSON.stringify(arr));
+    res.send(req.body.t0 + ", " + req.body.t9);
+})
 
 // dynamic handling
 app.get('/guest', (req, res) => {
@@ -139,21 +170,5 @@ app.get('/guest', (req, res) => {
     
     conn.end();
 });
-
-/* app.post('/guest', (req, res) = {
-
-}); */
-
-/* app.get('/login', (req, res) => {
-
-    let content = '<div><h2>Admin Login</div>';
-
-    //Save as cookies and refresh on click
-    content += '<input type="text" id="adminName" placeholder="Username"/>'
-    content += '<br><br>';
-    content += '<input type="password" id="adminPassword" placeholder="Password"/>'
-    content += '</div>';
-    res.send(content);
-}); */
 
 app.listen(2000);
