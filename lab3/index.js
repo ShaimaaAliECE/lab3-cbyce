@@ -78,37 +78,32 @@ app.post('/admin', (req, res) => {
 });
 
 app.post('/admin/changes', (req, res) => {
-    //let conn = newConnection();
-    //conn.connect();
+    let conn = newConnection();
+    conn.connect();
 
     let arr = [];
     let dupValErr = false //Duplicate value trying to be set error
     //let clock;
     for (var i = 0; i < 10; i++) {
-        //clock = req.body[`${"t" + i}`].split(":");
-
         if(arr.includes(req.body[`${"t" + i}`])) {
             dupValErr = true;
             i = 10; //Breaks loop once error is found
         } 
 
         arr.push(req.body[`${"t" + i}`]);
-
-        //arr.push( parseInt( (clock[0] * 60) + clock[1] ) );
     }
 
     arr.sort();
 
-    /* conn.query( `update Availability set LastUpdate = CURRENT_TIME(), AvailTimes = '` + dupValErr + `')`//, true, false, true)`
+    conn.query( `update Availability set LastUpdate = CURRENT_TIME(), AvailTimes = '` + JSON.stringify(arr) + `' where Name = "Admin"`
             , (err,rows,fields) => {
                 if (err)
                     console.log(err);
-                else
+                else {
                     console.log('One row inserted');
-            }); */
-    console.log(arr[9]);
-    console.log(JSON.stringify(arr));
-    res.send(req.body.t0 + ", " + req.body.t9);
+                    res.send("Changes have been successfully made");
+                }
+            });
 })
 
 // dynamic handling
