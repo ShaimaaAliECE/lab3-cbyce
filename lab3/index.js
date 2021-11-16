@@ -1,4 +1,5 @@
 const express = require('express');
+const newConnection = require('./connectionDB');
 
 const app = express();
 
@@ -7,6 +8,9 @@ app.use(express.static('static'));
 
 // dynamic handling
 app.get('/guest', (req, res) => {
+    let avail = [];
+    let conn = newConnection();
+    conn.connect();
     let content = '<div>'
                     +'<div>Doodle App</div>'
                         +'<table style="min-width: 100vw;">'
@@ -27,17 +31,42 @@ app.get('/guest', (req, res) => {
                             +'</thead>'
                             +'<tbody>';
 
-    //Add code to add previous rows but display disabled thus guest cant edit them
+    conn.query( `select * from Availability `
+            , (err,rows,fields) => {
+                if (err)
+                    console.log(err);
+                else {
+                    for(r of rows) {
+                        let times = JSON.parse(r.AvailTimes);
 
-    content += '<tr><td style="text-align: center"><input type="text" id="guest-name" placeholder="Name"></td>';
+                        content += '<tr><td style="text-align: center"><input type="text" id="' + r.Name + '-row" value="' + r.Name + '" readonly></td>';
 
-    for(var i = 0; i < 10; i++) {
-        content += '<td style="text-align: center"><input type="checkbox" id="guest-box-' + i + '"></td>';
-    }
+                        console.log(times.length);
+
+                        for(var i = 0; i < times.length; i++){
+                            if(times[i]) {
+                                content += '<td style="text-align: center"><input type="checkbox" id="' + r.Name + '-box-' + i + '" checked="checkced" onclick="return false;"></td>';
+                            } else {
+                                content += '<td style="text-align: center"><input type="checkbox" id="' + r.Name + '-box-' + i + '" onclick="return false;"></td>';
+                            }
+                        }
+
+                        content += '</tr>';
+                    }
+
+                    content += '<tr><td style="text-align: center"><input type="text" id="guest-name" placeholder="Name"></td>';
+
+                    for(var i = 0; i < 10; i++) {
+                        content += '<td style="text-align: center"><input type="checkbox" id="guest-box-' + i + '"></td>';
+                    }
+                    
+
+                    content += '</tr></tbody></table></div>';
+                    res.send(content);
+                }
+            });
     
-
-    content += '</tr></tbody></table></div>';
-    res.send(content);
+    conn.end();
 });
 
 /* app.get('/login', (req, res) => {
