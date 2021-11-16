@@ -14,9 +14,11 @@
         </div>
         <div style="display:flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; border: 2px solid; border-radius: 10px;">
             <div>Admin Login</div><br>
-            <input type="text" id="adminName" placeholder="Username" style="text-align:center"/><br>
-            <input type="password" id="adminPassword" placeholder="Password" style="text-align:center"/><br>
-            <button type="button">Login</button><br>
+            <form action="/admin" method="post" style="display: flex; flex-direction: column">
+                <input type="text" name="adminUsr" placeholder="Username" style="text-align:center" required/><br>
+                <input type="password" name="adminPass" placeholder="Password" style="text-align:center" required/><br>
+                <button type="submit">Login</button>
+            </form></br>
             <div><a href="/guest">Continue as guest</a></div>
         </div>
     </div>
