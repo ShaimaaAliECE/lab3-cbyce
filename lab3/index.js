@@ -92,6 +92,7 @@ app.post('/admin/avail', (req, res) => {
             , (err,rows,fields) => {
                 if (err) {
                     console.log(err);
+                    conn.end();
                     res.send("Failure");
                 } else {
                     console.log('Row Selects');
@@ -104,7 +105,7 @@ app.post('/admin/avail', (req, res) => {
 
                     for(var i = 0; i < usrs.length; i++) {
                         for(var j = 0; j < 10; j++) {
-                            if(!updates.includes(usrs[i][0]) && !((req.body[`${usrs[i][0] + "Box" + j}`] == "on") == usrs[i][1][`${times[j]}`]) ) {
+                            if(!updates.includes(i) && !((req.body[`${usrs[i][0] + "Box" + j}`] == "on") == usrs[i][1][`${times[j]}`]) ) {
                                 updates.push(i);
                             } 
                             usrs[i][1][`${times[j]}`] = (req.body[`${usrs[i][0] + "Box" + j}`] == "on");
@@ -123,6 +124,7 @@ app.post('/admin/avail', (req, res) => {
                     if (updates.length > 0) {
                        conn.query(updateStr, (err,rows,fields) => {
                             if(err) {
+                                console.log(err);
                                 res.send("Could not complete update");
                             } else {
                                 res.send('Update Successful');
@@ -132,10 +134,10 @@ app.post('/admin/avail', (req, res) => {
                     } else {
                         res.send("No Updates made as no changes were made");
                     }
+
+                    conn.end();
                 }
     })
-    
-    conn.end();
 });
 
 app.post('/admin/time', (req, res) => {
