@@ -1,6 +1,7 @@
 const express = require('express');
 const newConnection = require('./connectionDB');
 
+//Change select times to accom lastUpdate
 const correctUsr = "admin";
 const correctPass = "123";
 const app = express();
@@ -18,7 +19,7 @@ app.post('/admin', (req, res) => {
         let conn = newConnection();
         conn.connect();
 
-        let content = '<div><div>Doodle App - Admin Portal</div>'
+        let content = '<div><div>Doodle App - Admin Portal (Please save availability and time changes seperatly)</div>'
                             +'<table style="min-width: 100vw; padding: 5px 15px">';                                        
 
         conn.query( `select * from Availability order by Name, case Name when "Admin" then '1' else '2' end`
@@ -30,7 +31,7 @@ app.post('/admin', (req, res) => {
                         rows.shift();
 
                         content +='<table style="min-width: 100vw; padding: 5px 15px">'
-                                    +'<form action="/admin/changes" method="post" style="display:table-header-group; vertical-align: middle; border-color: inherit">'
+                                    +'<form action="/admin/time" method="post" style="display:table-header-group; vertical-align: middle; border-color: inherit">'
                                         +'<tr>'
                                             +'<th>Name</th>';
                         
@@ -44,7 +45,7 @@ app.post('/admin', (req, res) => {
                                     +'<th colspan="10"><button type="submit" id="save-times-btn">Save Time Changes</button></th>'
                                 +'</tr>'
                             +'</form>'
-                            +'<tbody>';
+                            +'<form action="/admin/avail" method="post">';
 
 
                         for(r of rows) {
@@ -54,28 +55,90 @@ app.post('/admin', (req, res) => {
 
                             for(var i = 0; i < adminTimes.length; i++){
                                 if(times[`${adminTimes[i]}`]) {
-                                    content += '<td style="text-align: center"><input type="checkbox" id="' + r.Name + '-box-' + i + '" checked="checkced" onclick="return false;"></td>';
+                                    content += '<td style="text-align: center"><input type="checkbox" id="' + r.Name + 'Box' + i + '" name="' + r.Name + 'Box' + i + '" checked="checkced"></td>';
                                 } else {
-                                    content += '<td style="text-align: center"><input type="checkbox" id="' + r.Name + '-box-' + i + '" onclick="return false;"></td>';
+                                    content += '<td style="text-align: center"><input type="checkbox" id="' + r.Name + 'Box' + i + '" name="' + r.Name + 'Box' + i + '"></td>'; //onclick="return false;
                                 }
                             }
 
                             content += '</tr>';
                         }
 
-                        content += '</tr></tbody></table></div>';
+                        content +='<tr>'
+                                    +'<th></th>'
+                                    +'<th colspan="10"><button type="submit" id="save-avail-btn">Save Availability Changes</button></th>'
+                                +'</tr></form></table></div>';
+
                         res.send(content);
                     }
                 });
-        
         conn.end();
-        
     } else {
         res.redirect("/");
     }
 });
 
-app.post('/admin/changes', (req, res) => {
+app.post('/admin/avail', (req, res) => {
+    //WIll need to reaccess time, Add page warning about change time or avail not both at once
+    let times = [];
+    let updates = [];
+    let updateStr = `Update Availability Set LastUpdate = CURRENT_TIME(), AvailTimes = (case Name `;
+    let usrs = [];
+
+    let conn = newConnection();
+    conn.connect();
+    
+    conn.query( `select * from Availability order by Name, case Name when "Admin" then '1' else '2' end`
+            , (err,rows,fields) => {
+                if (err) {
+                    console.log(err);
+                    res.send("Failure");
+                } else {
+                    console.log('Row Selects');
+                    times = JSON.parse(rows[0].AvailTimes);
+                    rows.shift();
+
+                    for(r of rows) {
+                        usrs.push([r.Name, JSON.parse(r.AvailTimes)]); //AvailTimes is still string here
+                    }
+
+                    for(var i = 0; i < usrs.length; i++) {
+                        for(var j = 0; j < 10; j++) {
+                            if(!updates.includes(usrs[i][0]) && !((req.body[`${usrs[i][0] + "Box" + j}`] == "on") == usrs[i][1][`${times[j]}`]) ) {
+                                updates.push(i);
+                            } 
+                            usrs[i][1][`${times[j]}`] = (req.body[`${usrs[i][0] + "Box" + j}`] == "on");
+                        }
+                    }
+
+                    for(u of updates) {
+                        updateStr += `When '` + usrs[u][0] + `' then '` + JSON.stringify(usrs[u][1]) + `' `;
+                    }
+
+                    updateStr += `Else (AvailTimes) End)`;
+
+                    console.log(updateStr);
+                    console.log(updates.length);
+
+                    if (updates.length > 0) {
+                       conn.query(updateStr, (err,rows,fields) => {
+                            if(err) {
+                                res.send("Could not complete update");
+                            } else {
+                                res.send('Update Successful');
+                            }
+                        })
+                        
+                    } else {
+                        res.send("No Updates made as no changes were made");
+                    }
+                }
+    })
+    
+    conn.end();
+});
+
+app.post('/admin/time', (req, res) => {
     let conn = newConnection();
     conn.connect();
 
