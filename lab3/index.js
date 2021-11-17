@@ -12,6 +12,7 @@ app.use(express.urlencoded({
     extended: true
 }));
 
+// Admin page login
 app.post('/admin', (req, res) => {
     if(req.body.adminUsr === correctUsr && req.body.adminPass === correctPass) {
         let conn = newConnection();
@@ -31,24 +32,19 @@ app.post('/admin', (req, res) => {
                         content +='<table style="min-width: 100vw; padding: 5px 15px">'
                                     +'<form action="/admin/changes" method="post" style="display:table-header-group; vertical-align: middle; border-color: inherit">'
                                         +'<tr>'
-                                            +'<th>Name</th>'
-                                            +'<th><input type="time" id="t0" name="t0" value="' + adminTimes[0] + '" required></th>'
-                                            +'<th><input type="time" id="t1" name="t1" value="' + adminTimes[1] + '" required></th>'
-                                            +'<th><input type="time" id="t2" name="t2" value="' + adminTimes[2] + '" required></th>'
-                                            +'<th><input type="time" id="t3" name="t3" value="' + adminTimes[3] + '" required></th>'
-                                            +'<th><input type="time" id="t4" name="t4" value="' + adminTimes[4] + '" required></th>'
-                                            +'<th><input type="time" id="t5" name="t5" value="' + adminTimes[5] + '" required></th>'
-                                            +'<th><input type="time" id="t6" name="t6" value="' + adminTimes[6] + '" required></th>'
-                                            +'<th><input type="time" id="t7" name="t7" value="' + adminTimes[7] + '" required></th>'
-                                            +'<th><input type="time" id="t8" name="t8" value="' + adminTimes[8] + '" required></th>'
-                                            +'<th><input type="time" id="t9" name="t9" value="' + adminTimes[9] + '" required></th>'
-                                        +'</tr>'
-                                        +'<tr>'
-                                            +'<th></th>'
-                                            +'<th colspan="10"><button type="submit" id="save-times-btn">Save Time Changes</button></th>'
-                                        +'</tr>'
-                                    +'</form>'
-                                    +'<tbody>';
+                                            +'<th>Name</th>';
+                        
+                        for (var i = 0; i < 10; i++) {
+                            content += '<th><input type="time" id="t' + i + '" name="t' + i + '" value="' + adminTimes[i] + '" required></th>'
+                        }
+                        
+                        content +='</tr>'
+                                +'<tr>'
+                                    +'<th></th>'
+                                    +'<th colspan="10"><button type="submit" id="save-times-btn">Save Time Changes</button></th>'
+                                +'</tr>'
+                            +'</form>'
+                            +'<tbody>';
 
 
                         for(r of rows) {
@@ -127,17 +123,17 @@ app.post('/guest/register', (req, res) => {
 
         conn.query( `insert into Availability values("` + req.body.guestName + `",CURRENT_TIME(),'` + JSON.stringify(newAvail) + `')`
                 , (err,rows,fields) => {
-                    if (err)
+                    if (err) {
                         console.log(err);
-                    else {
+                        res.send("Availability was not added. Please retry.");
+                    } else {
                         console.log('Row Inserted');
+                        res.redirect("/guest");
                     }
-                    res.send("Availability successfully added. Please click the back arrow and refresh the page."); //************************* change to have better direction */
                 });
         conn.end(); 
    } else {
-       res.end();
-       //Handle error of same name
+       res.send("Duplicate names cannot be added to the availability page. Please enter another variation of your name or ad a sufix/prefix");
    } 
 });
 
@@ -158,20 +154,13 @@ app.get('/guest', (req, res) => {
                                     +'<form method="post" action="/guest/register" style="display:table-row-group; vertical-align: middle; border-color: inherit">'
                                         +'<thead>'
                                             +'<tr>'
-                                                +'<th>Name</th>'
-                                                +'<th><input type="time" name="t0" value="' + adminTimes[0] + '" readonly></th>'
-                                                +'<th><input type="time" name="t1" value="' + adminTimes[1] + '" readonly></th>'
-                                                +'<th><input type="time" name="t2" value="' + adminTimes[2] + '" readonly></th>'
-                                                +'<th><input type="time" name="t3" value="' + adminTimes[3] + '" readonly></th>'
-                                                +'<th><input type="time" name="t4" value="' + adminTimes[4] + '" readonly></th>'
-                                                +'<th><input type="time" name="t5" value="' + adminTimes[5] + '" readonly></th>'
-                                                +'<th><input type="time" name="t6" value="' + adminTimes[6] + '" readonly></th>'
-                                                +'<th><input type="time" name="t7" value="' + adminTimes[7] + '" readonly></th>'
-                                                +'<th><input type="time" name="t8" value="' + adminTimes[8] + '" readonly></th>'
-                                                +'<th><input type="time" name="t9" value="' + adminTimes[9] + '" readonly></th>'
-                                            +'</tr>'
-                                        +'</thead>'
-                                        +'<tbody>';
+                                                +'<th>Name</th>';
+
+                    for(var i = 0; i < 10; i ++) {
+                        content += '<th><input type="time" name="t' + i + '" value="' + adminTimes[i] + '" readonly></th>';
+                    }
+
+                    content +='</tr></thead><tbody>';
 
                     for(r of rows) {
                         let times = JSON.parse(r.AvailTimes);
@@ -185,7 +174,6 @@ app.get('/guest', (req, res) => {
                                 content += '<td style="text-align: center"><input type="checkbox" id="' + r.Name + '-box-' + i + '" onclick="return false;"></td>';
                             }
                         }
-
                         content += '</tr>';
                     }
 
@@ -197,8 +185,7 @@ app.get('/guest', (req, res) => {
                     for(var i = 0; i < 10; i++) {
                         content += '<td style="text-align: center"><input type="checkbox" name="box' + i + '"></td>';
                     }
-                    
-
+                
                     content += '</tr><tr><td style="text-align:center" colspan=11><button type="submit">Add Availability</button></td></tr></tbody></form></table></div>';
 
                     res.send(content);
