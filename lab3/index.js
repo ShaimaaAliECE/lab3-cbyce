@@ -1,23 +1,18 @@
 const express = require('express');
 const newConnection = require('./connectionDB');
-//************************************************************* */
-//Clean up variable declaration
-//Change select times to accom lastUpdate
-//get functions with cookies for admin
 
+//Username and password for admin
 const correctUsr = "admin";
 const correctPass = "123";
+
 const app = express();
 
 // serve static contents
 app.use(express.static('static'));
-
-//WHAT DOES THIS DO ******************************************
 app.use(express.urlencoded({
     extended: true
 }));
 
-// GOOD MAY WANT TO IMPLEMENT COOKIES **********************************
 // Admin page login
 app.post('/admin', (req, res) => {
     //Checks passwords against whats saved in doc. (Not secure but has working password)
@@ -71,7 +66,7 @@ app.post('/admin', (req, res) => {
                                 if(times[`${adminTimes[i]}`]) {
                                     content += '<td style="text-align: center"><input type="checkbox" id="' + r.Name + 'Box' + i + '" name="' + r.Name + 'Box' + i + '" checked="checkced"></td>';
                                 } else {
-                                    content += '<td style="text-align: center"><input type="checkbox" id="' + r.Name + 'Box' + i + '" name="' + r.Name + 'Box' + i + '"></td>'; //onclick="return false;
+                                    content += '<td style="text-align: center"><input type="checkbox" id="' + r.Name + 'Box' + i + '" name="' + r.Name + 'Box' + i + '"></td>';
                                 }
                             }
 
@@ -188,9 +183,9 @@ app.post('/admin/time', (req, res) => {
                 , (err,rows,fields) => {
                     if (err) {
                         console.log(err);
-                        res.send("Changes not successfully made. Please click the back arrow and retry."); //************************* change to have better direction */
+                        res.send("Changes not successfully made. Please click the back arrow and retry.");
                     } else {
-                        res.send("Changes successfully made. Please click the back arrow and refresh the page."); //************************* change to have better direction */
+                        res.send("Changes successfully made. Please click the back arrow and refresh the page.");
                     }
                 });
         conn.end();
@@ -266,11 +261,7 @@ app.get('/guest', (req, res) => {
 
                         // Adds a checkbox for each column that has previous usr entry (chekced indicates available)
                         for(var i = 0; i < adminTimes.length; i++){
-                            //if(times[`${adminTimes[i]}`]) {
-                            content += '<td style="text-align: center"><input type="checkbox" id="' + r.Name + '-box-' + i + '" checked="' + ( (times[`${adminTimes[i]}`]) ? "checked" : "") + '" onclick="return false;"></td>'; // If errors occur check here **************************************
-                            /* } else {
-                                content += '<td style="text-align: center"><input type="checkbox" id="' + r.Name + '-box-' + i + '" onclick="return false;"></td>';
-                            } */
+                            content += '<td style="text-align: center"><input type="checkbox" id="' + r.Name + '-box-' + i + '" checked="' + ( (times[`${adminTimes[i]}`]) ? "checked" : "") + '" onclick="return false;"></td>';
                         }
                         content += '</tr>';
                     }
@@ -294,5 +285,5 @@ app.get('/guest', (req, res) => {
     conn.end();
 });
 
-//Hosted on port 2000
-app.listen(2000);
+//Hosted on port 80
+app.listen(80);
