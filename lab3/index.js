@@ -261,7 +261,7 @@ app.get('/guest', (req, res) => {
 
                         // Adds a checkbox for each column that has previous usr entry (chekced indicates available)
                         for(var i = 0; i < adminTimes.length; i++){
-                            content += '<td style="text-align: center"><input type="checkbox" id="' + r.Name + '-box-' + i + '" checked="' + ( (times[`${adminTimes[i]}`]) ? "checked" : "") + '" onclick="return false;"></td>';
+                            content += '<td style="text-align: center"><input type="checkbox" id="' + r.Name + '-box-' + i + '" ' + ( (times[`${adminTimes[i]}`]) ? 'checked="checked"' : '') + ' onclick="return false;"></td>';
                         }
                         content += '</tr>';
                     }
